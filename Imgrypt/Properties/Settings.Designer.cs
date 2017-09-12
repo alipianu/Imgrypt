@@ -22,5 +22,71 @@ namespace Imgrypt.Properties {
                 return defaultInstance;
             }
         }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute(".jpg.png.bmp")]
+        public string acceptedImageFormats {
+            get {
+                return ((string)(this["acceptedImageFormats"]));
+            }
+        }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute(".txt")]
+        public string acceptedTextFormats {
+            get {
+                return ((string)(this["acceptedTextFormats"]));
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("C:\\")]
+        public string decImgDefault {
+            get {
+                return ((string)(this["decImgDefault"]));
+            }
+            set {
+                this["decImgDefault"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("C:\\")]
+        public string decPassDefault {
+            get {
+                return ((string)(this["decPassDefault"]));
+            }
+            set {
+                this["decPassDefault"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("C:\\")]
+        public string encImgDefault {
+            get {
+                return ((string)(this["encImgDefault"]));
+            }
+            set {
+                this["encImgDefault"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("C:\\")]
+        public string encMsgDefault {
+            get {
+                return ((string)(this["encMsgDefault"]));
+            }
+            set {
+                this["encMsgDefault"] = value;
+            }
+        }
     }
 }

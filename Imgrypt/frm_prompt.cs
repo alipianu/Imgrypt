@@ -51,7 +51,7 @@ namespace Imgrypt
 
         private void pb_help_Click(object sender, EventArgs e)
         {
-            System.Diagnostics.Process.Start(fileName: "https://github.com/alipianu");
+            System.Diagnostics.Process.Start(fileName: "https://github.com/alipianu/Imgrypt");
         }
 
         private void pb_settings_Click(object sender, EventArgs e)

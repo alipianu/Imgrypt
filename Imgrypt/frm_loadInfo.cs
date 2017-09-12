@@ -7,7 +7,6 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using System.Configuration;
 
 
 namespace Imgrypt
@@ -20,7 +19,6 @@ namespace Imgrypt
         bool backPressed = false;
         string imgDefaultFolder;
         string textDefaultFolder;
-        string destDefaultFolder;
 
         private frm_prompt mainForm = null;
         public frm_loadInfo(Form form)
@@ -44,17 +42,14 @@ namespace Imgrypt
 
             if (mainForm.encryptChosen == true)
             {
-                imgDefaultFolder = ConfigurationManager.AppSettings["encImgDefault"];
-                textDefaultFolder = ConfigurationManager.AppSettings["encMsgDefault"];
-                destDefaultFolder = ConfigurationManager.AppSettings["encDestDefault"];
+                imgDefaultFolder = Properties.Settings.Default.encImgDefault;
+                textDefaultFolder = Properties.Settings.Default.encMsgDefault;
             }
             else
             {
-                imgDefaultFolder = ConfigurationManager.AppSettings["decImgDefault"];
-                textDefaultFolder = ConfigurationManager.AppSettings["decPassDefault"];
-                destDefaultFolder = ConfigurationManager.AppSettings["decDestDefault"];
+                imgDefaultFolder = Properties.Settings.Default.decImgDefault;
+                textDefaultFolder = Properties.Settings.Default.decPassDefault;
             }
-
         }
 
         private void btn_encrypt_Click(object sender, EventArgs e)
@@ -200,8 +195,8 @@ namespace Imgrypt
 
         private void LoadAcceptedFormats()
         {
-            string imgFormats = ConfigurationManager.AppSettings["acceptedImageFormats"];
-            string txtFormats = ConfigurationManager.AppSettings["acceptedTextFormats"];
+            string imgFormats = Properties.Settings.Default.acceptedImageFormats;
+            string txtFormats = Properties.Settings.Default.acceptedTextFormats;
 
             acceptedImgFormats.Capacity = NumOccurences(imgFormats, ".");
             while (imgFormats.Contains("."))
