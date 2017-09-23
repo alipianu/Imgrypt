@@ -25,7 +25,7 @@ namespace Imgrypt.Properties {
         
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute(".jpg.png.bmp")]
+        [global::System.Configuration.DefaultSettingValueAttribute(".jpg .png .bmp")]
         public string acceptedImageFormats {
             get {
                 return ((string)(this["acceptedImageFormats"]));

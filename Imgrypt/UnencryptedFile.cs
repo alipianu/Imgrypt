@@ -1,163 +1,535 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Drawing;
 using System.IO;
-using System.Configuration;
 
 namespace Imgrypt
 {
     class UnencryptedFile
     {
-        /* File properties */
-        private string srcImg = null;
-        private string srcMsg = null;
-        private string message = "";
-        private string password = "";
+        // File properties
+        private readonly string message = null;
+        private readonly string password = null;
+        private readonly int W, H;
         private Bitmap image = null;
-        private int W, H;
 
-        public UnencryptedFile(string imageSource, string messageSource)
+        public UnencryptedFile(string imageSource, string messageSource, string password)
         {
             /* Initialize properties */
-            srcImg = imageSource;
-            srcMsg = messageSource;
-
-            image = (Bitmap)Image.FromFile(imageSource);
-            H = image.Size.Height;
-            W = image.Size.Width;
+            this.message = GetMessage(messageSource);
+            this.password = password;
+            this.image = (Bitmap)Image.FromFile(imageSource);
+            this.H = image.Size.Height;
+            this.W = image.Size.Width;
         }
 
         public void Encrypt()
         {
-            /* Extract message from text file */
-            GetMessage();
+            // Setup new pixel
+            Color pixel = new Color();
 
-            /* Get maximum distance bewteen each secret pixel */
-            int maxDistance = ((W * H) / message.Length) * 2;
-            if (maxDistance < 2)
-                maxDistance = 2;
-            else if (maxDistance > 19998)
-                maxDistance = 19998;
+            // Extract 3 words from password
+            string[] pWords = password.Split(' ');
 
+            // Generate random int sequences
+            Random randPosition = new Random(GenerateSeed(pWords[0]));
+            Random randDataChar = new Random(GenerateSeed(pWords[1]));
+            Random randDifference = new Random(GenerateSeed(pWords[2]));
 
-            /* Generate the secret char that indicates the last pixel */
-            List<int> checkedVals = new List<int>(256);
-            for (int i = 0; i < 256; i++)
-                checkedVals.Add(0);
-
-            Random randAscii = new Random();
-            int charAscii = 127;
-            int temp;
-
-            while (!checkedVals.All(o => o == 1))
+            // Calculate max char distance
+            int maxCharDistance = (W * H) / message.Length;
+            int[] maxCharDistPixel = new int[3];
+            int total = maxCharDistance;
+            for (int i = 0; i < maxCharDistPixel.Length; i++)
             {
-                temp = randAscii.Next(0, 256);
-                if (!message.Contains((char)temp))
+                if (total >= 255)
                 {
-                    charAscii = temp;
-                    break;
+                    maxCharDistPixel[i] = 255;
+                    total /= 255;
                 }
                 else
                 {
-                    if (checkedVals[temp] != 1)
-                        checkedVals[temp] = 1;
+                    maxCharDistPixel[i] = total;
+                    total = 1;
                 }
             }
+            maxCharDistance = maxCharDistPixel[0] * maxCharDistPixel[1] * maxCharDistPixel[2];
 
-            /* Get a seed where the secret pixels reach the bottom of the image, but do not surpass it */
-            Random pixLoc = null;
-            int seed = 0;
-            int totalspacing = W * H;
-            int[] spacingArray = new int[message.Length + 1];
+            // Store max char distance in first position of randPosition
+            int maxCharDistPosition = randPosition.Next(1, W * H);
+            int maxCharY = maxCharDistPosition / W;
+            int maxCharX = maxCharDistPosition - maxCharY * W;
+            pixel = Color.FromArgb(maxCharDistPixel[0], maxCharDistPixel[1], maxCharDistPixel[2]);
+            image.SetPixel(maxCharX, maxCharY, pixel);
 
-            while (totalspacing >= W * H)
+            // Generate secret char pixel value that indicates last pixel
+            int charAscii = 127;
+            for (int i = 0; i < 256; i++)
             {
-                seed = GetRandSeed(6);  // Get random seed
-                pixLoc = new Random(seed);  // Generate random location sequence from seed
-
-                for (int i = 0; i <= message.Length; i++)
+                if (!message.Contains((char)i))
                 {
-                    spacingArray[i] = (pixLoc.Next(1, maxDistance + 1));
-                    totalspacing += spacingArray[i];
+                    charAscii = i;
+                    break;
                 }
             }
 
-            /* Generate password */
-            if (maxDistance < 19998)
-                password += maxDistance.ToString() + "_";
-            password += seed.ToString();
-            password += "_" + charAscii.ToString();
+            // Store secret char pixel value in second position of randPosition
+            int charAsciiPosition = randPosition.Next(1, W * H);
+            if (charAsciiPosition == maxCharDistPosition)
+                charAsciiPosition++;
+            int charAsciiY = charAsciiPosition / W;
+            int charAsciiX = charAsciiPosition - charAsciiY * W;
+            switch (randDataChar.Next(0, 3))
+            {
+                case 0:
+                    pixel = Color.FromArgb(charAscii, pixel.G, pixel.B);
+                    break;
+                case 1:
+                    pixel = Color.FromArgb(pixel.R, charAscii, pixel.B);
+                    break;
+                default:
+                    pixel = Color.FromArgb(pixel.R, pixel.G, charAscii);
+                    break;
+            }
+            image.SetPixel(charAsciiX, charAsciiY, pixel);
 
-
-            /* Hide message */
-            Color pixel = new Color();
-            int nextPixLoc = 0;
-            int currPixLoc = 0;
-            int x;
-            int y;
-
+            // Hide the message
+            int nextPixLoc, currPixLoc = 0;
+            int x, y;
+            int a, b;
+            int secretChar;
+            int newR = 0, newG = 0, newB = 0;
+            int nthDifference = 0;
             for (int i = 0; i <= message.Length; i++)
             {
-                // Get location of next secret char
-                nextPixLoc = spacingArray[i];
+                if (i < message.Length)
+                {
+                    // Set the secret character to '@' if greater than 255
+                    secretChar = (int)message[i];
+                    if (secretChar > 255)
+                        secretChar = 64;
+                }
+                else
+                    secretChar = charAscii;
 
+                // Get location of next secret char
+                nextPixLoc = randPosition.Next(1, maxCharDistance + 1);
+
+                // Calculate next secret char pixel
                 y = (currPixLoc + nextPixLoc) / W;
                 x = (currPixLoc + nextPixLoc) - (y * W);
                 if (x >= W || y >= H)
                     break;
-                pixel = image.GetPixel(x, y);
-
+                else if ((x == maxCharX && y == maxCharY) || (x == charAsciiX && y == charAsciiY))
+                    x++;
                 currPixLoc += nextPixLoc;
 
-                if (nextPixLoc % 2 == 0)  // Store the secret char in 'r' value of the pixel
+                // Get pixel
+                pixel = image.GetPixel(x, y);
+
+                // Calculate new pixel's RGB values
+                switch (randDataChar.Next(0, 3))
                 {
-                    if (i == message.Length)
-                        pixel = Color.FromArgb(charAscii, pixel.G, pixel.B);
-                    else
-                    {
-                        if (message[i] > 255)
-                            pixel = Color.FromArgb(64, pixel.G, pixel.B);
-                        else
-                            pixel = Color.FromArgb(message[i], pixel.G, pixel.B);
-                    }
-                }
-                else if (nextPixLoc % 3 == 0)  // Store the secret char in the 'g' value of the pixel
-                {
-                    if (i == message.Length)
-                        pixel = Color.FromArgb(pixel.R, charAscii, pixel.B);
-                    else
-                    {
-                        if (message[i] > 255)
-                            pixel = Color.FromArgb(pixel.R, 64, pixel.B);
-                        else
-                            pixel = Color.FromArgb(pixel.R, message[i], pixel.B);
-                    }
-                }
-                else  // Store the secret char in the 'b' value of the pixel
-                {
-                    if (i == message.Length)
-                        pixel = Color.FromArgb(pixel.R, pixel.G, charAscii);
-                    else
-                    {
-                        if (message[i] > 255)
-                            pixel = Color.FromArgb(pixel.R, pixel.G, 64);
-                        else
-                            pixel = Color.FromArgb(pixel.R, pixel.G, message[i]);
-                    }
+                    case 0:  // R stores secret char
+                        switch (randDataChar.Next(0, 2))
+                        {
+                            case 0:  // G ends in nth difference (where n < 10) && B contains charSum operation specifier
+                                newR = -1;
+                                for (int j = 0; j < 10; j++)
+                                {
+                                    int diff = randDifference.Next(0, 256);
+                                    if (diff > secretChar)
+                                    {
+                                        a = diff + secretChar;
+                                        b = diff - secretChar;
+
+                                        if (Math.Abs(pixel.R - a) < Math.Abs(pixel.R - b) && a < 256)
+                                        {
+                                            if (Math.Abs(pixel.R - a) < Math.Abs(pixel.R - newR) || newR == -1)
+                                            {
+                                                newR = a;
+                                                nthDifference = j;
+                                                newB = (((int)Math.Floor(pixel.B / 10.0)) * 10) + 1;
+                                            }
+                                        }
+                                        else
+                                        {
+                                            if (Math.Abs(pixel.R - b) < Math.Abs(pixel.R - newR) || newR == -1)
+                                            {
+                                                newR = b;
+                                                nthDifference = j;
+                                                newB = (((int)Math.Floor(pixel.B / 10.0)) * 10) + 2;
+                                            }
+                                        }
+                                    }
+                                    else
+                                    {
+                                        a = secretChar + diff;
+                                        b = secretChar - diff;
+
+                                        if (Math.Abs(pixel.R - a) < Math.Abs(pixel.R - b) && a < 256)
+                                        {
+                                            if (Math.Abs(pixel.R - a) < Math.Abs(pixel.R - newR) || newR == -1)
+                                            {
+                                                newR = a;
+                                                nthDifference = j;
+                                                newB = (((int)Math.Floor(pixel.B / 10.0)) * 10) + 3;
+                                            }
+                                        }
+                                        else
+                                        {
+                                            if (Math.Abs(pixel.R - b) < Math.Abs(pixel.R - newR) || newR == -1)
+                                            {
+                                                newR = b;
+                                                nthDifference = j;
+                                                newB = (((int)Math.Floor(pixel.B / 10.0)) * 10) + 4;
+                                            }
+                                        }
+                                    }
+                                }
+                                // Set new G
+                                newG = ((int)Math.Floor(pixel.G / 10.0)) * 10;
+                                if (newG == 250)
+                                    newG = 240;
+                                newG += nthDifference;
+                                break;
+                            default:  // B ends in nth difference (where n < 10) && G contains charSum operation specifier
+                                newR = -1;
+                                for (int j = 0; j < 10; j++)
+                                {
+                                    int diff = randDifference.Next(0, 256);
+                                    if (diff > secretChar)
+                                    {
+                                        a = diff + secretChar;
+                                        b = diff - secretChar;
+
+                                        if (Math.Abs(pixel.R - a) < Math.Abs(pixel.R - b) && a < 256)
+                                        {
+                                            if (Math.Abs(pixel.R - a) < Math.Abs(pixel.R - newR) || newR == -1)
+                                            {
+                                                newR = a;
+                                                nthDifference = j;
+                                                newG = (((int)Math.Floor(pixel.G / 10.0)) * 10) + 1;
+                                            }
+                                        }
+                                        else
+                                        {
+                                            if (Math.Abs(pixel.R - b) < Math.Abs(pixel.R - newR) || newR == -1)
+                                            {
+                                                newR = b;
+                                                nthDifference = j;
+                                                newG = (((int)Math.Floor(pixel.G / 10.0)) * 10) + 2;
+                                            }
+                                        }
+                                    }
+                                    else
+                                    {
+                                        a = secretChar + diff;
+                                        b = secretChar - diff;
+
+                                        if (Math.Abs(pixel.R - a) < Math.Abs(pixel.R - b) && a < 256)
+                                        {
+                                            if (Math.Abs(pixel.R - a) < Math.Abs(pixel.R - newR) || newR == -1)
+                                            {
+                                                newR = a;
+                                                nthDifference = j;
+                                                newG = (((int)Math.Floor(pixel.G / 10.0)) * 10) + 3;
+                                            }
+                                        }
+                                        else
+                                        {
+                                            if (Math.Abs(pixel.R - b) < Math.Abs(pixel.R - newR) || newR == -1)
+                                            {
+                                                newR = b;
+                                                nthDifference = j;
+                                                newG = (((int)Math.Floor(pixel.G / 10.0)) * 10) + 4;
+                                            }
+                                        }
+                                    }
+                                }
+                                // Set new B
+                                newB = ((int)Math.Floor(pixel.B / 10.0)) * 10;
+                                if (newB == 250)
+                                    newB = 240;
+                                newB += nthDifference;
+                                break;
+                        }
+                        break;
+                    case 1:  // G stores secret char
+                        switch (randDataChar.Next(0, 2))
+                        {
+                            case 0:  // R ends in nth difference (where n < 10) && B contains charSum operation specifier
+                                newG = -1;
+                                for (int j = 0; j < 10; j++)
+                                {
+                                    int diff = randDifference.Next(0, 256);
+                                    if (diff > secretChar)
+                                    {
+                                        a = diff + secretChar;
+                                        b = diff - secretChar;
+
+                                        if (Math.Abs(pixel.G - a) < Math.Abs(pixel.G - b) && a < 256)
+                                        {
+                                            if (Math.Abs(pixel.G - a) < Math.Abs(pixel.G - newG) || newG == -1)
+                                            {
+                                                newG = a;
+                                                nthDifference = j;
+                                                newB = (((int)Math.Floor(pixel.B / 10.0)) * 10) + 1;
+                                            }
+                                        }
+                                        else
+                                        {
+                                            if (Math.Abs(pixel.G - b) < Math.Abs(pixel.G - newG) || newG == -1)
+                                            {
+                                                newG = b;
+                                                nthDifference = j;
+                                                newB = (((int)Math.Floor(pixel.B / 10.0)) * 10) + 2;
+                                            }
+                                        }
+                                    }
+                                    else
+                                    {
+                                        a = secretChar + diff;
+                                        b = secretChar - diff;
+
+                                        if (Math.Abs(pixel.G - a) < Math.Abs(pixel.G - b) && a < 256)
+                                        {
+                                            if (Math.Abs(pixel.G - a) < Math.Abs(pixel.G - newG) || newG == -1)
+                                            {
+                                                newG = a;
+                                                nthDifference = j;
+                                                newB = (((int)Math.Floor(pixel.B / 10.0)) * 10) + 3;
+                                            }
+                                        }
+                                        else
+                                        {
+                                            if (Math.Abs(pixel.G - b) < Math.Abs(pixel.G - newG) || newG == -1)
+                                            {
+                                                newG = b;
+                                                nthDifference = j;
+                                                newB = (((int)Math.Floor(pixel.B / 10.0)) * 10) + 4;
+                                            }
+                                        }
+                                    }
+                                }
+                                // Set new R
+                                newR = ((int)Math.Floor(pixel.R / 10.0)) * 10;
+                                if (newR == 250)
+                                    newR = 240;
+                                newR += nthDifference;
+                                break;
+                            default:  // B ends in nth difference (where n < 10) && R contains charSum operation specifier
+                                newG = -1;
+                                for (int j = 0; j < 10; j++)
+                                {
+                                    int diff = randDifference.Next(0, 256);
+                                    if (diff > secretChar)
+                                    {
+                                        a = diff + secretChar;
+                                        b = diff - secretChar;
+
+                                        if (Math.Abs(pixel.G - a) < Math.Abs(pixel.G - b) && a < 256)
+                                        {
+                                            if (Math.Abs(pixel.G - a) < Math.Abs(pixel.G - newG) || newG == -1)
+                                            {
+                                                newG = a;
+                                                nthDifference = j;
+                                                newR = (((int)Math.Floor(pixel.R / 10.0)) * 10) + 1;
+                                            }
+                                        }
+                                        else
+                                        {
+                                            if (Math.Abs(pixel.G - b) < Math.Abs(pixel.G - newG) || newG == -1)
+                                            {
+                                                newG = b;
+                                                nthDifference = j;
+                                                newR = (((int)Math.Floor(pixel.R / 10.0)) * 10) + 2;
+                                            }
+                                        }
+                                    }
+                                    else
+                                    {
+                                        a = secretChar + diff;
+                                        b = secretChar - diff;
+
+                                        if (Math.Abs(pixel.G - a) < Math.Abs(pixel.G - b) && a < 256)
+                                        {
+                                            if (Math.Abs(pixel.G - a) < Math.Abs(pixel.G - newG) || newG == -1)
+                                            {
+                                                newG = a;
+                                                nthDifference = j;
+                                                newR = (((int)Math.Floor(pixel.R / 10.0)) * 10) + 3;
+                                            }
+                                        }
+                                        else
+                                        {
+                                            if (Math.Abs(pixel.G - b) < Math.Abs(pixel.G - newG) || newG == -1)
+                                            {
+                                                newG = b;
+                                                nthDifference = j;
+                                                newR = (((int)Math.Floor(pixel.R / 10.0)) * 10) + 4;
+                                            }
+                                        }
+                                    }
+                                }
+                                // Set new B
+                                newB = ((int)Math.Floor(pixel.B / 10.0)) * 10;
+                                if (newB == 250)
+                                    newB = 240;
+                                newB += nthDifference;
+                                break;
+                        }
+                        break;
+                    default:  // B stores secret char
+                        switch (randDataChar.Next(0, 2))
+                        {
+                            case 0:  // R ends in nth difference (where n < 10) && G contains charSum operation specifier
+                                newB = -1;
+                                for (int j = 0; j < 10; j++)
+                                {
+                                    int diff = randDifference.Next(0, 256);
+                                    if (diff > secretChar)
+                                    {
+                                        a = diff + secretChar;
+                                        b = diff - secretChar;
+
+                                        if (Math.Abs(pixel.B - a) < Math.Abs(pixel.B - b) && a < 256)
+                                        {
+                                            if (Math.Abs(pixel.B - a) < Math.Abs(pixel.B - newB) || newB == -1)
+                                            {
+                                                newB = a;
+                                                nthDifference = j;
+                                                newG = (((int)Math.Floor(pixel.G / 10.0)) * 10) + 1;
+                                            }
+                                        }
+                                        else
+                                        {
+                                            if (Math.Abs(pixel.B - b) < Math.Abs(pixel.B - newB) || newB == -1)
+                                            {
+                                                newB = b;
+                                                nthDifference = j;
+                                                newG = (((int)Math.Floor(pixel.G / 10.0)) * 10) + 2;
+                                            }
+                                        }
+                                    }
+                                    else
+                                    {
+                                        a = secretChar + diff;
+                                        b = secretChar - diff;
+
+                                        if (Math.Abs(pixel.B - a) < Math.Abs(pixel.B - b) && a < 256)
+                                        {
+                                            if (Math.Abs(pixel.B - a) < Math.Abs(pixel.B - newB) || newB == -1)
+                                            {
+                                                newB = a;
+                                                nthDifference = j;
+                                                newG = (((int)Math.Floor(pixel.G / 10.0)) * 10) + 3;
+                                            }
+                                        }
+                                        else
+                                        {
+                                            if (Math.Abs(pixel.B - b) < Math.Abs(pixel.B - newB) || newB == -1)
+                                            {
+                                                newB = b;
+                                                nthDifference = j;
+                                                newG = (((int)Math.Floor(pixel.G / 10.0)) * 10) + 4;
+                                            }
+                                        }
+                                    }
+                                }
+                                // Set new R
+                                newR = ((int)Math.Floor(pixel.R / 10.0)) * 10;
+                                if (newR == 250)
+                                    newR = 240;
+                                newR += nthDifference;
+                                break;
+                            default:  // G ends in nth difference (where n < 10) && R contains charSum operation specifier
+                                newB = -1;
+                                for (int j = 0; j < 10; j++)
+                                {
+                                    int diff = randDifference.Next(0, 256);
+                                    if (diff > secretChar)
+                                    {
+                                        a = diff + secretChar;
+                                        b = diff - secretChar;
+
+                                        if (Math.Abs(pixel.B - a) < Math.Abs(pixel.B - b) && a < 256)
+                                        {
+                                            if (Math.Abs(pixel.B - a) < Math.Abs(pixel.B - newB) || newB == -1)
+                                            {
+                                                newB = a;
+                                                nthDifference = j;
+                                                newR = (((int)Math.Floor(pixel.R / 10.0)) * 10) + 1;
+                                            }
+                                        }
+                                        else
+                                        {
+                                            if (Math.Abs(pixel.B - b) < Math.Abs(pixel.B - newB) || newB == -1)
+                                            {
+                                                newB = b;
+                                                nthDifference = j;
+                                                newR = (((int)Math.Floor(pixel.R / 10.0)) * 10) + 2;
+                                            }
+                                        }
+                                    }
+                                    else
+                                    {
+                                        a = secretChar + diff;
+                                        b = secretChar - diff;
+
+                                        if (Math.Abs(pixel.B - a) < Math.Abs(pixel.B - b) && a < 256)
+                                        {
+                                            if (Math.Abs(pixel.B - a) < Math.Abs(pixel.B - newB) || newB == -1)
+                                            {
+                                                newB = a;
+                                                nthDifference = j;
+                                                newR = (((int)Math.Floor(pixel.R / 10.0)) * 10) + 3;
+                                            }
+                                        }
+                                        else
+                                        {
+                                            if (Math.Abs(pixel.B - b) < Math.Abs(pixel.B - newB) || newB == -1)
+                                            {
+                                                newB = b;
+                                                nthDifference = j;
+                                                newR = (((int)Math.Floor(pixel.R / 10.0)) * 10) + 4;
+                                            }
+                                        }
+                                    }
+                                }
+                                // Set new G
+                                newG = ((int)Math.Floor(pixel.G / 10.0)) * 10;
+                                if (newG == 250)
+                                    newG = 240;
+                                newG += nthDifference;
+                                break;
+                        }
+                        break;
                 }
 
                 // Update pixel
+                pixel = Color.FromArgb(newR, newG, newB);
                 image.SetPixel(x, y, pixel);
             }
         }
 
-        private void GetMessage()
+
+        private int GenerateSeed(string str)
+        {
+            string seed = "";
+            Random rand = null;
+            foreach (char c in str)
+            {
+                rand = new Random(c);
+                seed += rand.Next(0, 10).ToString();
+            }
+            return Int32.Parse(seed);
+        }
+
+        private string GetMessage(string messageSource)
         {
             /* Extract message */
-            message = File.ReadAllText(srcMsg);
+            return File.ReadAllText(messageSource);
         }
 
         public void SaveEncryptedImage(string outputDirectory)
@@ -170,22 +542,6 @@ namespace Imgrypt
         {
             /* Write password to text file */
             File.WriteAllText(outputDirectory + "\\password.txt", password);
-        }
-
-        private int GetRandSeed(int seedlength)
-        {
-            int val = 0;
-            string seed = "";
-
-            Random rand = new Random();
-
-            for (int i = 0; i < seedlength; i++)
-            {
-                val = rand.Next(1, 10);
-                seed += val.ToString();
-            }
-
-            return Convert.ToInt32(seed);
         }
     }
 }

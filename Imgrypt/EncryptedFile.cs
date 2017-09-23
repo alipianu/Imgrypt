@@ -1,120 +1,246 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Drawing;
 using System.IO;
-using System.Configuration;
 
 namespace Imgrypt
 {
     class EncryptedFile
     {
         // File properties
-        private string srcImg = null;
-        private string srcPass = null;
-        private string message = "";
-        private string password = "";
+        private readonly string password = "";
+        private readonly int W, H;
         private Bitmap image = null;
-        private int W, H;
+        private string message = "";
 
-        public EncryptedFile(string imageSource, string passwordSource)
+        public EncryptedFile(string imageSource, string password)
         {
             // Initialize properties
-            srcImg = imageSource;
-            srcPass = passwordSource;
-
-            image = new Bitmap(imageSource);
+            this.password = password;
+            image = (Bitmap)Image.FromFile(imageSource);
             H = image.Size.Height;
             W = image.Size.Width;
         }
 
         public void Decrypt()
         {
-            // Extract message from text file
-            GetPassword();
-
-            // Get the maximum distance between secret pixels, the seed, and the terminating ascii character from the password
-            int maxDistance = 0;
-            int seed = 0;
-            int charAscii = 0;
-            if ((password.Length - password.Replace("_", "").Length) == 1)
-            {
-                maxDistance = 9999 * 2;
-                seed = Convert.ToInt32(password.Substring(0, password.LastIndexOf("_")));
-            }
-            else
-            {
-                maxDistance = (Convert.ToInt32(password.Substring(0, password.IndexOf("_"))));
-                seed = Convert.ToInt32(password.Substring(password.IndexOf("_") + 1, password.LastIndexOf("_") + -1 - password.IndexOf("_")));
-            }
-            charAscii = Convert.ToInt32(password.Substring(password.LastIndexOf("_") + 1, password.Length - 1 - password.LastIndexOf("_")));
-
-
-            // Generate random location sequence from seed
-            Random pixLoc = new Random(Convert.ToInt32(seed));
-
-
+            // Setup new pixel
             Color pixel = new Color();
-            int nextPixLoc = 0;
-            int loc = 0;
-            int x;
-            int y;
-            int secretchar = 0;
 
-            while (nextPixLoc < (W * H))
+            // Extract 3 words from password
+            string[] pWords = password.Split(' ');
+
+            // Generate random int sequences
+            Random randPosition = new Random(GenerateSeed(pWords[0]));
+            Random randDataChar = new Random(GenerateSeed(pWords[1]));
+            Random randDifference = new Random(GenerateSeed(pWords[2]));
+
+            // Get maxCharDistance
+            int maxCharDistPosition = randPosition.Next(1, W * H);
+            int maxCharY = maxCharDistPosition / W;
+            int maxCharX = maxCharDistPosition - maxCharY * W;
+            pixel = image.GetPixel(maxCharX, maxCharY);
+            int maxCharDistance = pixel.R * pixel.G * pixel.B;
+
+            // Get secret pixel ascii value that indicates last pixel
+            int charAscii;
+            int charAsciiPosition = randPosition.Next(1, W * H);
+            if (charAsciiPosition == maxCharDistPosition)
+                charAsciiPosition++;
+            int charAsciiY = charAsciiPosition / W;
+            int charAsciiX = charAsciiPosition - charAsciiY * W;
+            pixel = image.GetPixel(charAsciiX, charAsciiY);
+            switch (randDataChar.Next(0, 3))
+            {
+                case 0:
+                    charAscii = pixel.R;
+                    break;
+                case 1:
+                    charAscii = pixel.G;
+                    break;
+                default:
+                    charAscii = pixel.B;
+                    break;
+            }
+
+            // Extract the message
+            int nextPixLoc = 0, currPixLoc = 0;
+            int x, y;
+            int secretChar;
+            int[] differenceArray = new int[10];
+            int diff;
+
+            while (nextPixLoc < W * H)
             {
                 // Get location of next secret char
-                nextPixLoc = pixLoc.Next(1, maxDistance + 1);
+                nextPixLoc = randPosition.Next(1, maxCharDistance + 1);
 
-                // Get correct pixel
-                y = (loc + nextPixLoc) / W;
-                x = (loc + nextPixLoc) - (y * W);
+                // Calculate next secret char pixel
+                y = (currPixLoc + nextPixLoc) / W;
+                x = (currPixLoc + nextPixLoc) - (y * W);
                 if (x >= W || y >= H)
                     break;
+                else if ((x == maxCharX && y == maxCharY) || (x == charAsciiX && y == charAsciiY))
+                    x++;
+                currPixLoc += nextPixLoc;
+
+                // Get pixel
                 pixel = image.GetPixel(x, y);
 
-                loc += nextPixLoc;
+                // Get first 10 diferences
+                for (int j = 0; j < 10; j++)
+                    differenceArray[j] = randDifference.Next(0, 256);
 
-                // Get secret character stored in pixel
-                if (nextPixLoc % 2 == 0)
-                    secretchar = pixel.R;
-                else if (nextPixLoc % 3 == 0)
-                    secretchar = pixel.G;
-                else
-                    secretchar = pixel.B;
+                // Get secret character from pixel
+                switch (randDataChar.Next(0, 3))
+                {
+                    case 0:  // R contains secret char
+                        switch (randDataChar.Next(0, 2))
+                        {
+                            case 0:  // G ends in nth difference (where n < 10) && B contains charSum operation specifier
+                                diff = differenceArray[pixel.G % 10];
+                                switch (pixel.B % 10)
+                                {
+                                    case 1:
+                                        secretChar = pixel.R - diff;
+                                        break;
+                                    case 2:
+                                        secretChar = diff - pixel.R;
+                                        break;
+                                    case 3:
+                                        secretChar = pixel.R - diff;
+                                        break;
+                                    default:
+                                        secretChar = diff + pixel.R;
+                                        break;
+                                }
+                                break;
+                            default:  // B ends in nth difference (where n < 10) && G contains charSum operation specifier
+                                diff = differenceArray[pixel.B % 10];
+                                switch (pixel.G % 10)
+                                {
+                                    case 1:
+                                        secretChar = pixel.R - diff;
+                                        break;
+                                    case 2:
+                                        secretChar = diff - pixel.R;
+                                        break;
+                                    case 3:
+                                        secretChar = pixel.R - diff;
+                                        break;
+                                    default:
+                                        secretChar = diff + pixel.R;
+                                        break;
+                                }
+                                break;
+                        }
+                        break;
+                    case 1:  // G contains secret char
+                        switch (randDataChar.Next(0, 2))
+                        {
+                            case 0:  // R ends in nth difference (where n < 10) && B contains charSum operation specifier
+                                diff = differenceArray[pixel.R % 10];
+                                switch (pixel.B % 10)
+                                {
+                                    case 1:
+                                        secretChar = pixel.G - diff;
+                                        break;
+                                    case 2:
+                                        secretChar = diff - pixel.G;
+                                        break;
+                                    case 3:
+                                        secretChar = pixel.G - diff;
+                                        break;
+                                    default:
+                                        secretChar = diff + pixel.G;
+                                        break;
+                                }
+                                break;
+                            default:  // B ends in nth difference (where n < 10) && R contains charSum operation specifier
+                                diff = differenceArray[pixel.B % 10];
+                                switch (pixel.R % 10)
+                                {
+                                    case 1:
+                                        secretChar = pixel.G - diff;
+                                        break;
+                                    case 2:
+                                        secretChar = diff - pixel.G;
+                                        break;
+                                    case 3:
+                                        secretChar = pixel.G - diff;
+                                        break;
+                                    default:
+                                        secretChar = diff + pixel.G;
+                                        break;
+                                }
+                                break;
+                        }
+                        break;
+                    default:  // B contains secret char
+                        switch (randDataChar.Next(0, 2))
+                        {
+                            case 0:  // R ends in nth difference (where n < 10) && G contains charSum operation specifier
+                                diff = differenceArray[pixel.R % 10];
+                                switch (pixel.G % 10)
+                                {
+                                    case 1:
+                                        secretChar = pixel.B - diff;
+                                        break;
+                                    case 2:
+                                        secretChar = diff - pixel.B;
+                                        break;
+                                    case 3:
+                                        secretChar = pixel.B - diff;
+                                        break;
+                                    default:
+                                        secretChar = diff + pixel.B;
+                                        break;
+                                }
+                                break;
+                            default:  // G ends in nth difference (where n < 10) && R contains charSum operation specifier
+                                diff = differenceArray[pixel.G % 10];
+                                switch (pixel.R % 10)
+                                {
+                                    case 1:
+                                        secretChar = pixel.B - diff;
+                                        break;
+                                    case 2:
+                                        secretChar = diff - pixel.B;
+                                        break;
+                                    case 3:
+                                        secretChar = pixel.B - diff;
+                                        break;
+                                    default:
+                                        secretChar = diff + pixel.B;
+                                        break;
+                                }
+                                break;
+                        }
+                        break;
+                }
 
-                // Exit if current pixel contains terminating char, otherwise concatenate onto message
-                if (secretchar != charAscii)
-                    message += (char)secretchar;
-                else
+                if (secretChar == charAscii)
                     break;
+                else
+                    message += (char)secretChar;
             }
         }
 
-        private void GetPassword()
+        private int GenerateSeed(string str)
         {
-            // Extract password
-            password = File.ReadAllText(srcPass);
+            string seed = "";
+            Random rand = null;
+            foreach (char c in str)
+            {
+                rand = new Random(c);
+                seed += rand.Next(0, 10).ToString();
+            }
+            return Int32.Parse(seed);
         }
 
         public void SaveMessage(string outputDirectory)
         {
             // Write messsage to text file
             File.WriteAllText(outputDirectory + "\\message.txt", message);
-        }
-
-        private string VerifyPassword()
-        {
-            if (true)
-            {
-                return "OK";
-            }
-            else
-            {
-                return "ERROR";
-            }
         }
     }
 }

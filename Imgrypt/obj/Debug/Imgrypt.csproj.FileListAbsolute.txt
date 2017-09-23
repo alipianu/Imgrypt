@@ -1,7 +1,6 @@
 C:\MY_PROJECTS\Imgrypt\Imgrypt\bin\Debug\Imgrypt.exe.config
 C:\MY_PROJECTS\Imgrypt\Imgrypt\bin\Debug\Imgrypt.exe
 C:\MY_PROJECTS\Imgrypt\Imgrypt\bin\Debug\Imgrypt.pdb
-C:\MY_PROJECTS\Imgrypt\Imgrypt\obj\Debug\Imgrypt.frm_loadInfo.resources
 C:\MY_PROJECTS\Imgrypt\Imgrypt\obj\Debug\Imgrypt.frm_prompt.resources
 C:\MY_PROJECTS\Imgrypt\Imgrypt\obj\Debug\Imgrypt.frm_settings.resources
 C:\MY_PROJECTS\Imgrypt\Imgrypt\obj\Debug\Imgrypt.Properties.Resources.resources
@@ -9,3 +8,7 @@ C:\MY_PROJECTS\Imgrypt\Imgrypt\obj\Debug\Imgrypt.csproj.GenerateResource.Cache
 C:\MY_PROJECTS\Imgrypt\Imgrypt\obj\Debug\Imgrypt.csproj.CoreCompileInputs.cache
 C:\MY_PROJECTS\Imgrypt\Imgrypt\obj\Debug\Imgrypt.exe
 C:\MY_PROJECTS\Imgrypt\Imgrypt\obj\Debug\Imgrypt.pdb
+C:\MY_PROJECTS\Imgrypt\Imgrypt\obj\Debug\Imgrypt.frm_decrypt.resources
+C:\MY_PROJECTS\Imgrypt\Imgrypt\obj\Debug\Imgrypt.frm_encrypt.resources
+C:\MY_PROJECTS\Imgrypt\Imgrypt\obj\Debug\Imgrypt.frm_getPass.resources
+C:\MY_PROJECTS\Imgrypt\Imgrypt\obj\Debug\Imgrypt.csprojResolveAssemblyReference.cache

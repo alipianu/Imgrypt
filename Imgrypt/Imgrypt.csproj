@@ -51,11 +51,23 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="EncryptedFile.cs" />
-    <Compile Include="frm_loadInfo.cs">
+    <Compile Include="frm_decrypt.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="frm_loadInfo.Designer.cs">
-      <DependentUpon>frm_loadInfo.cs</DependentUpon>
+    <Compile Include="frm_decrypt.designer.cs">
+      <DependentUpon>frm_decrypt.cs</DependentUpon>
+    </Compile>
+    <Compile Include="frm_encrypt.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="frm_encrypt.designer.cs">
+      <DependentUpon>frm_encrypt.cs</DependentUpon>
+    </Compile>
+    <Compile Include="frm_getPass.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="frm_getPass.designer.cs">
+      <DependentUpon>frm_getPass.cs</DependentUpon>
     </Compile>
     <Compile Include="frm_prompt.cs">
       <SubType>Form</SubType>
@@ -69,11 +81,18 @@
     <Compile Include="frm_settings.Designer.cs">
       <DependentUpon>frm_settings.cs</DependentUpon>
     </Compile>
+    <Compile Include="MiscUtils.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="UnencryptedFile.cs" />
-    <EmbeddedResource Include="frm_loadInfo.resx">
-      <DependentUpon>frm_loadInfo.cs</DependentUpon>
+    <EmbeddedResource Include="frm_decrypt.resx">
+      <DependentUpon>frm_decrypt.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="frm_encrypt.resx">
+      <DependentUpon>frm_encrypt.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="frm_getPass.resx">
+      <DependentUpon>frm_getPass.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="frm_prompt.resx">
       <DependentUpon>frm_prompt.cs</DependentUpon>

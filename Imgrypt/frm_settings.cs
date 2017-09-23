@@ -1,48 +1,43 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace Imgrypt
 {
     public partial class frm_settings : Form
     { 
-        bool backPressed = false;
-
+        // Globals
+        private bool backPressed = false;
         private frm_prompt mainForm = null;
+
         public frm_settings(Form form)
         {
+            // Initialize components
+            InitializeComponent();
             mainForm = form as frm_prompt;
 
-            InitializeComponent();
+            // Setup split container
+            sc_settings.SplitterDistance = pnl_settings.Height - btn_back.Height;
 
-            sc_settings.SplitterDistance = pnl_settings.Height - btn_back.Height - 3;
-
+            // Load settings
             txt_encImg.Text = Properties.Settings.Default.encImgDefault;
             txt_encMsg.Text = Properties.Settings.Default.encMsgDefault;
             txt_decImg.Text = Properties.Settings.Default.decImgDefault;
-            txt_decPass.Text = Properties.Settings.Default.decPassDefault;
         }
 
         private void frm_settings_FormClosed(object sender, FormClosedEventArgs e)
         {
+            // Save settings
             Properties.Settings.Default.encImgDefault = txt_encImg.Text;
             Properties.Settings.Default.encMsgDefault = txt_encMsg.Text;
             Properties.Settings.Default.decImgDefault = txt_decImg.Text;
-            Properties.Settings.Default.decPassDefault = txt_decPass.Text;
             Properties.Settings.Default.Save();
 
+            // Show main form if back button was pressed, otherwise close application
             if (!backPressed)
                 mainForm.Close();
             else
             {
-                Point formLoc = new Point((this.Width + this.Location.X) / 2, this.Location.Y);
-                this.mainForm.Location = formLoc;
+                MiscUtils.SetNewFormLocation(this, mainForm);
                 this.mainForm.Show();
             }
         }
@@ -55,6 +50,7 @@ namespace Imgrypt
 
         private void btn_encImg_Click(object sender, EventArgs e)
         {
+            // Update default encrypt image location textbox
             fbd_defaultFolder.SelectedPath = txt_encImg.Text;
             fbd_defaultFolder.ShowDialog();
             txt_encImg.Text = fbd_defaultFolder.SelectedPath;
@@ -62,6 +58,7 @@ namespace Imgrypt
 
         private void btn_encMsg_Click(object sender, EventArgs e)
         {
+            // Update default encrypt message location textbox
             fbd_defaultFolder.SelectedPath = txt_encMsg.Text;
             fbd_defaultFolder.ShowDialog();
             txt_encMsg.Text = fbd_defaultFolder.SelectedPath;
@@ -69,16 +66,10 @@ namespace Imgrypt
 
         private void btn_decImg_Click(object sender, EventArgs e)
         {
+            // Update default decrypt image location textbox
             fbd_defaultFolder.SelectedPath = txt_decImg.Text;
             fbd_defaultFolder.ShowDialog();
             txt_decImg.Text = fbd_defaultFolder.SelectedPath;
-        }
-
-        private void btn_decPass_Click(object sender, EventArgs e)
-        {
-            fbd_defaultFolder.SelectedPath = txt_decPass.Text;
-            fbd_defaultFolder.ShowDialog();
-            txt_decPass.Text = fbd_defaultFolder.SelectedPath;
         }
     }
 }

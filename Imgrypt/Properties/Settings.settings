@@ -3,7 +3,7 @@
   <Profiles />
   <Settings>
     <Setting Name="acceptedImageFormats" Type="System.String" Scope="Application">
-      <Value Profile="(Default)">.jpg.png.bmp</Value>
+      <Value Profile="(Default)">.jpg .png .bmp</Value>
     </Setting>
     <Setting Name="acceptedTextFormats" Type="System.String" Scope="Application">
       <Value Profile="(Default)">.txt</Value>

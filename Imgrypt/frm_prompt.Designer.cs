@@ -35,8 +35,8 @@
             this.pb_settings = new System.Windows.Forms.PictureBox();
             this.btn_decrypt = new System.Windows.Forms.Button();
             this.btn_encrypt = new System.Windows.Forms.Button();
-            this.tt_help = new System.Windows.Forms.ToolTip(this.components);
-            this.tt_settings = new System.Windows.Forms.ToolTip(this.components);
+            this.tip_help = new System.Windows.Forms.ToolTip(this.components);
+            this.tip_settings = new System.Windows.Forms.ToolTip(this.components);
             this.pnl_prompt.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.pb_help)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.pb_settings)).BeginInit();
@@ -108,6 +108,7 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(333, 105);
             this.Controls.Add(this.pnl_prompt);
+            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.MaximizeBox = false;
             this.Name = "frm_prompt";
@@ -127,7 +128,7 @@
         private System.Windows.Forms.Button btn_encrypt;
         private System.Windows.Forms.PictureBox pb_help;
         private System.Windows.Forms.PictureBox pb_settings;
-        private System.Windows.Forms.ToolTip tt_help;
-        private System.Windows.Forms.ToolTip tt_settings;
+        private System.Windows.Forms.ToolTip tip_help;
+        private System.Windows.Forms.ToolTip tip_settings;
     }
 }
