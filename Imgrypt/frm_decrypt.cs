@@ -9,6 +9,7 @@ namespace Imgrypt
         // Globals
         private string[] acceptedImgFormats;
         private string imgDefaultFolder;
+        private string msgOutputName = null;
         private bool backPressed = false;
         private Form mainForm = null;
         public string password = null;
@@ -23,6 +24,7 @@ namespace Imgrypt
             // Load data from app settings
             acceptedImgFormats = MiscUtils.LoadAcceptedFormats(Properties.Settings.Default.acceptedImageFormats);
             imgDefaultFolder = Properties.Settings.Default.decImgDefault;
+            msgOutputName = Properties.Settings.Default.decMsgOutputName;
 
             // Display error provider on form startup
             err_img.SetError(txt_imgLoc, "An image file is required. Supported formats are: " + Properties.Settings.Default.acceptedImageFormats);
@@ -111,7 +113,7 @@ namespace Imgrypt
                 // Decrypt the file
                 EncryptedFile eImageFile = new EncryptedFile(txt_imgLoc.Text, password);
                 eImageFile.Decrypt();
-                eImageFile.SaveMessage(txt_destLoc.Text);
+                eImageFile.SaveMessage(txt_destLoc.Text, msgOutputName, Properties.Settings.Default.decMsgOutputFormat);
 
                 // Reset all textboxes
                 txt_imgLoc.Text = "";

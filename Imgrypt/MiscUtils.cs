@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 using System.Drawing;
 using System.Windows.Forms;
 
@@ -59,6 +55,24 @@ namespace Imgrypt
         public static void SetNewFormLocation(Form oldForm, Form newForm)
         {
             newForm.Location = new Point(oldForm.Location.X + oldForm.Width / 2 - newForm.Width / 2, oldForm.Location.Y);
+        }
+
+
+        // Removes spaces from textboxes
+        public static void RemoveSpacesFromTextbox(TextBox textBox, bool tabToNext)
+        {
+            // Store original selection start location
+            int originalSelectionStart = textBox.SelectionStart;
+            
+            if (textBox.Text.Length > 0 && textBox.Text.Contains(" "))
+            {
+                // Remove spaces if they exists
+                textBox.Text = textBox.Text.Replace(" ", "");
+                if (tabToNext)
+                    SendKeys.Send("{TAB}");  // Simulate a TAB button press
+                else
+                    textBox.SelectionStart = originalSelectionStart - 1;  // Set selection start to original selection start location
+            }
         }
     }
 }

@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Drawing;
 using System.IO;
+using Microsoft.Office.Interop.Word;
 
 namespace Imgrypt
 {
@@ -16,11 +17,11 @@ namespace Imgrypt
         public UnencryptedFile(string imageSource, string messageSource, string password)
         {
             /* Initialize properties */
-            this.message = GetMessage(messageSource);
+            message = GetMessage(messageSource);
             this.password = password;
-            this.image = (Bitmap)Image.FromFile(imageSource);
-            this.H = image.Size.Height;
-            this.W = image.Size.Width;
+            image = (Bitmap)Image.FromFile(imageSource);
+            H = image.Size.Height;
+            W = image.Size.Width;
         }
 
         public void Encrypt()
@@ -103,12 +104,7 @@ namespace Imgrypt
             for (int i = 0; i <= message.Length; i++)
             {
                 if (i < message.Length)
-                {
-                    // Set the secret character to '@' if greater than 255
-                    secretChar = (int)message[i];
-                    if (secretChar > 255)
-                        secretChar = 64;
-                }
+                    secretChar = GetAscii(message[i]);
                 else
                     secretChar = charAscii;
 
@@ -528,20 +524,49 @@ namespace Imgrypt
 
         private string GetMessage(string messageSource)
         {
-            /* Extract message */
-            return File.ReadAllText(messageSource);
+            string ext = messageSource.Substring(messageSource.IndexOf('.'));
+            string output = "";
+            object missing = Type.Missing;
+            object readOnly = true;
+
+            // Extract message
+            switch (ext)
+            {
+                case ".docx":  // Get from Microsoft Word file
+                    // Create word application
+                    Application word = new Application();
+                    // Open document
+                    Document doc = word.Documents.Open(messageSource, ref missing, ref readOnly, ref missing, ref missing, ref missing, ref missing, ref missing, ref missing, ref missing, ref missing, ref missing, ref missing, ref missing, ref missing, ref missing);
+                    // Select all data from active window document
+                    foreach (Range range in doc.StoryRanges)
+                    {
+                        output += range.Text;
+                    }
+                    // Close document
+                    doc.Close();
+                    // Close word application
+                    word.Quit();
+                    break;
+                default:  // Get from text file
+                    output = File.ReadAllText(messageSource);
+                    break;
+            }
+            return output;
         }
 
-        public void SaveEncryptedImage(string outputDirectory)
+        public void SaveEncryptedImage(string outputDirectory, string imageName, string imageExt)
         {
-            /* Save new image */
-            image.Save(outputDirectory + "\\encrypted.bmp");
+            // Save new image
+            image.Save(outputDirectory + "\\" + imageName + imageExt);
         }
 
-        public void SavePassword(string outputDirectory)
+        private int GetAscii(char character)
         {
-            /* Write password to text file */
-            File.WriteAllText(outputDirectory + "\\password.txt", password);
+            // Return ascii of character if it's < 255, otherwise return ascii of '@'
+            if (character > 255)
+                return 64;
+            else
+                return (int)character;
         }
     }
 }

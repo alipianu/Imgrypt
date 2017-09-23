@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Drawing;
 using System.IO;
+using Microsoft.Office.Interop.Word;
 
 namespace Imgrypt
 {
@@ -237,10 +238,32 @@ namespace Imgrypt
             return Int32.Parse(seed);
         }
 
-        public void SaveMessage(string outputDirectory)
+        public void SaveMessage(string outputDirectory, string messageName, string messageExt)
         {
-            // Write messsage to text file
-            File.WriteAllText(outputDirectory + "\\message.txt", message);
+            object missing = Type.Missing;
+
+            // Save message
+            switch (messageExt)
+            {
+                case ".docx":  // Store in Microsoft Word file
+                    // Create word application
+                    Application word = new Application();
+                    // Set animation status of word application
+                    word.ShowAnimation = false;
+                    // Set word application visibility to false
+                    word.Visible = false;
+                    // Create new document
+                    Document doc = word.Documents.Add(ref missing, ref missing, ref missing, ref missing);
+                    // Add text to document
+                    doc.Content.SetRange(0, 0);
+                    doc.Content.Text = message;
+                    doc.SaveAs2(outputDirectory + "\\" + messageName + messageExt);
+                    doc.Close();
+                    break;
+                default:  // Store in text file
+                    File.WriteAllText(outputDirectory + "\\" + messageName + messageExt, message);
+                    break;
+            }
         }
     }
 }

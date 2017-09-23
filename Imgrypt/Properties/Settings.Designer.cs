@@ -25,7 +25,7 @@ namespace Imgrypt.Properties {
         
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute(".jpg .png .bmp")]
+        [global::System.Configuration.DefaultSettingValueAttribute(".png .bmp")]
         public string acceptedImageFormats {
             get {
                 return ((string)(this["acceptedImageFormats"]));
@@ -34,7 +34,7 @@ namespace Imgrypt.Properties {
         
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute(".txt")]
+        [global::System.Configuration.DefaultSettingValueAttribute(".txt .docx")]
         public string acceptedTextFormats {
             get {
                 return ((string)(this["acceptedTextFormats"]));
@@ -86,6 +86,54 @@ namespace Imgrypt.Properties {
             }
             set {
                 this["encMsgDefault"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("default")]
+        public string encImgOutputFormat {
+            get {
+                return ((string)(this["encImgOutputFormat"]));
+            }
+            set {
+                this["encImgOutputFormat"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("default")]
+        public string decMsgOutputFormat {
+            get {
+                return ((string)(this["decMsgOutputFormat"]));
+            }
+            set {
+                this["decMsgOutputFormat"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("encrypted")]
+        public string encImgOutputName {
+            get {
+                return ((string)(this["encImgOutputName"]));
+            }
+            set {
+                this["encImgOutputName"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("message")]
+        public string decMsgOutputName {
+            get {
+                return ((string)(this["decMsgOutputName"]));
+            }
+            set {
+                this["decMsgOutputName"] = value;
             }
         }
     }

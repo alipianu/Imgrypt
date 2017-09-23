@@ -12,3 +12,4 @@ C:\MY_PROJECTS\Imgrypt\Imgrypt\obj\Debug\Imgrypt.frm_decrypt.resources
 C:\MY_PROJECTS\Imgrypt\Imgrypt\obj\Debug\Imgrypt.frm_encrypt.resources
 C:\MY_PROJECTS\Imgrypt\Imgrypt\obj\Debug\Imgrypt.frm_getPass.resources
 C:\MY_PROJECTS\Imgrypt\Imgrypt\obj\Debug\Imgrypt.csprojResolveAssemblyReference.cache
+C:\MY_PROJECTS\Imgrypt\Imgrypt\obj\Debug\Imgrypt.csproj.ResolveComReference.cache

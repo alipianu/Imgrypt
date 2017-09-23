@@ -95,7 +95,7 @@ namespace Imgrypt
         private void txt_word1_TextChanged(object sender, EventArgs e)
         {
             // Remove spaces from word
-            RemoveSpacesFromTextbox(txt_word1);
+            MiscUtils.RemoveSpacesFromTextbox(txt_word1, true);
 
             // Show error provider if user has not input any characters
             if (txt_word1.Text.Length > 0)
@@ -108,7 +108,7 @@ namespace Imgrypt
         private void txt_word2_TextChanged(object sender, EventArgs e)
         {
             // Remove spaces from word
-            RemoveSpacesFromTextbox(txt_word2);
+            MiscUtils.RemoveSpacesFromTextbox(txt_word2, true);
 
             // Show error provider if user has not input any characters
             if (txt_word2.Text.Length > 0)
@@ -121,24 +121,13 @@ namespace Imgrypt
         private void txt_word3_TextChanged(object sender, EventArgs e)
         {
             // Remove spaces from word
-            RemoveSpacesFromTextbox(txt_word3);
+            MiscUtils.RemoveSpacesFromTextbox(txt_word3, true);
 
             // Show error provider if user has not input any characters
             if (txt_word3.Text.Length > 0)
                 err_word3.Clear();
             if (txt_word3.Text.Length == 0)
                 err_word3.SetError(txt_word3, "Word must be at least 1 character long");
-        }
-
-
-        private void RemoveSpacesFromTextbox(TextBox textBox)
-        {
-            // Remove spaces if they exists and simulate a TAB button press
-            if (textBox.Text.Length > 0 && textBox.Text.Contains(" "))
-            {
-                textBox.Text = textBox.Text.Replace(" ", "");
-                SendKeys.Send("{TAB}");  
-            }
         }
     }
 }

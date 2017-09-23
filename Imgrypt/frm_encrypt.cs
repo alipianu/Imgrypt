@@ -11,6 +11,7 @@ namespace Imgrypt
         private string[] acceptedTxtFormats = null;
         private string imgDefaultFolder = null;
         private string msgDefaultFolder = null;
+        private string imgOutputName = null;
         private bool backPressed = false;
         private Form mainForm = null;
         public string password = null;
@@ -27,6 +28,7 @@ namespace Imgrypt
             acceptedTxtFormats = MiscUtils.LoadAcceptedFormats(Properties.Settings.Default.acceptedTextFormats);
             imgDefaultFolder = Properties.Settings.Default.encImgDefault;
             msgDefaultFolder = Properties.Settings.Default.encMsgDefault;
+            imgOutputName = Properties.Settings.Default.encImgOutputName;
 
             // Display error provider upon form startup
             err_img.SetError(txt_imgLoc, "An image file is required. Supported formats are: " + Properties.Settings.Default.acceptedImageFormats);
@@ -137,7 +139,7 @@ namespace Imgrypt
                 // Encrypt the file
                 UnencryptedFile uImageFile = new UnencryptedFile(txt_imgLoc.Text, txt_msgLoc.Text, password);
                 uImageFile.Encrypt();
-                uImageFile.SaveEncryptedImage(txt_destLoc.Text);
+                uImageFile.SaveEncryptedImage(txt_destLoc.Text, imgOutputName, LoadImgFileExt());
 
                 // Reset all textboxes
                 txt_imgLoc.Text = "";
@@ -147,6 +149,14 @@ namespace Imgrypt
                 // Forget password
                 password = null;
             }
+        }
+
+        private string LoadImgFileExt()
+        {
+            if (Properties.Settings.Default.encImgOutputFormat.Contains("."))
+                return Properties.Settings.Default.encImgOutputFormat;
+            else
+                return txt_imgLoc.Text.Substring(txt_imgLoc.Text.LastIndexOf('.'));
         }
     }
 }
