@@ -48,4 +48,4 @@ Imgrypt provides many ease-of-access settings. To use them, select the gear icon
 - It is extremely important that you choose a long password, favorably one where each word is a minimum of 5 characters long. Otherwise, your password can be easily brute forced, putting your encrypted information at risk.
 - For Imgrypt to function properly, the number of characters in your message must not exceed the number of pixels in the image being encrypted.
 - If Imgrypt outputs a file in a destination where a file with the same name and extension already exists, Imgrypt will overwrite the file. This applies to outputted images and messages.
-- Characters with ACSII values greater than 255 are turned into @ symbols
+- Characters with ACSII values greater than 255 are turned into *@* symbols.
