@@ -4,7 +4,7 @@
 ### What is Imgrypt?
 Imgrypt is a steganography program that encrypts and decrypts messages in image pixel data. Developed with usability and ease-of-access in mind, Imgrypt allows you to discretely yet securely store and share sensitive information on your device. With Imgrypt, you can unsuspectingly hide passwords, personal information, essays, source code and much more – leaving behind an encrypted image virtually identical to the original.
 
-Currently, Imgrypt is only compatible with Windows and supports two types of image (*.bmp* and *.png*) and message (*.txt* and *docx*) file formats.
+Currently, Imgrypt is only compatible with Windows and supports two types of image (*.bmp* and *.png*) and message (*.txt* and *.docx*) file formats.
 
 
 ### How does Imgrypt work?
@@ -24,7 +24,11 @@ Most importantly, images encrypted with Imgrypt are extremely secure. Pixel data
 
 
 ### Downloading and Installing Imgrypt
-To install Imgrypt, navigate to the *Releases* tab, locate the latest release, and choose Source code (*.zip*). As of now, the latest release is *v1.0.0*. Once the zip file has been downloaded, extract it to any location on your computer and inside the folder navigate to **Imgrypt Installer** -> **Debug**, where you should find the Imgrypt Installer. After running and completing the installer, check to see that Imgrypt has been installed properly on your computer by **1)** ensuring that the installation location contains 4 files (*Imgrypt.exe*, *Imgrypt.exe.config*, *Imgrypt.ico*, *System.Net.Http.dll*) and **2)** Imgrypt is listed as a program on your computer in *Add or remove programs*. To run Imgrypt, you must run the *Imgrypt.exe* file in the installation location. For ease of access, you can create a shortcut of the executable and copy it to the desktop. After installation, the *.zip* folder and extracted folder can now be deleted.
+To install Imgrypt, navigate to the *Releases* tab, locate the latest release, and choose *Source code (.zip)*. As of now, the latest release is *v1.0.0*. Once the .zip file has been downloaded, extract its contents to any destination on your computer and inside the extracted folder navigate to **Imgrypt Installer** -> **Debug**, where you should find the *Imgrypt Installer*. After running and completing the installer, check to see that Imgrypt has been installed properly on your computer by **1)** ensuring that the installation location contains 4 files (*Imgrypt.exe*, *Imgrypt.exe.config*, *Imgrypt.ico*, *System.Net.Http.dll*) and **2)** Imgrypt is listed as a program on your computer in *Add or remove programs*.
+
+To run Imgrypt, you must run the *Imgrypt.exe* file in the installation location. For ease of access, you can create a shortcut of the executable and copy it to the desktop.
+
+After installation, the *.zip* file and extracted folder can now be deleted.
 
 
 ### Uninstalling Imgrypt
